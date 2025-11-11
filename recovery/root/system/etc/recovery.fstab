@@ -1,0 +1,45 @@
+# recovery.fstab — Samsung Galaxy A53 5G (SM-A536E, s5e8825)
+# OrangeFox Recovery device tree for Android 14, supports FBE v2 (ICE encryption) and dynamic partitions.
+# <mount_point> <fs_type> <device> <mnt_flags> <fs_mgr_flags>
+
+# Dynamic partitions (mapped via logical volume manager)
+/system         ext4    /dev/block/mapper/system         ro,barrier=1,discard    wait,slotselect,logical,avb=vbmeta_system,first_stage_mount
+/system_ext     ext4    /dev/block/mapper/system_ext     ro,barrier=1,discard    wait,slotselect,logical,avb=vbmeta_system,first_stage_mount
+/product        ext4    /dev/block/mapper/product        ro,barrier=1,discard    wait,slotselect,logical,avb=vbmeta_system,first_stage_mount
+/vendor         ext4    /dev/block/mapper/vendor         ro,barrier=1,discard    wait,slotselect,logical,avb=vbmeta_system,first_stage_mount
+/odm            ext4    /dev/block/mapper/odm            ro,barrier=1,discard    wait,slotselect,logical,avb=vbmeta,first_stage_mount
+/vendor_dlkm    ext4    /dev/block/mapper/vendor_dlkm    ro,barrier=1,discard    wait,slotselect,logical,avb=vbmeta,first_stage_mount
+
+# Metadata partition (for FBEv2 encryption keys)
+/metadata       ext4    /dev/block/by-name/metadata      noatime,nosuid,nodev,discard    wait,check,formattable,first_stage_mount
+
+# Userdata partition (FBEv2 with ICE encryption and hardware-wrapped keys)
+# fileencryption=ice: Uses Inline Crypto Engine (hardware-accelerated)
+# wrappedkey: Encryption keys are hardware-wrapped (FBEv2 feature)
+# keydirectory: Location where wrapped keys are stored on metadata partition
+/data           f2fs    /dev/block/by-name/userdata      noatime,nosuid,nodev,discard,reserve_root=32768,resgid=5678,fsync_mode=nobarrier    wait,check,formattable,quota,latemount,resize,reservedsize=128M,checkpoint=fs,wrappedkey,keydirectory=/metadata/vold/metadata_encryption,fileencryption=ice
+
+# Physical partitions
+/boot           emmc    /dev/block/by-name/boot          defaults                        recoveryonly
+/recovery       emmc    /dev/block/by-name/recovery      defaults                        recoveryonly
+/cache          ext4    /dev/block/by-name/cache         defaults                        recoveryonly
+/efs            ext4    /dev/block/by-name/sefs          nosuid,nodev,barrier=1,discard  wait,check
+/sec_efs        ext4    /dev/block/by-name/sec_efs       nosuid,nodev,barrier=1,discard  wait,check
+/modem          emmc    /dev/block/by-name/radio         defaults                        recoveryonly
+/misc           emmc    /dev/block/by-name/misc          defaults                        recoveryonly
+
+# Firmware and Samsung-specific partitions
+/dtbo           emmc    /dev/block/by-name/dtbo          defaults                        recoveryonly
+/prism          ext4    /dev/block/by-name/prism         defaults                        recoveryonly
+/optics         ext4    /dev/block/by-name/optics        defaults                        recoveryonly
+/vbmeta_system  emmc    /dev/block/by-name/vbmeta_system defaults                        recoveryonly
+/vbmeta_samsung emmc    /dev/block/by-name/vbmeta_samsung defaults                       recoveryonly
+/vendor_boot    emmc    /dev/block/by-name/vendor_boot   defaults                        recoveryonly
+
+# Samsung ODE/FBE partitions (legacy, may not be used on Android 14)
+/keydata        ext4    /dev/block/by-name/keydata       defaults                        recoveryonly
+/keyrefuge      f2fs    /dev/block/by-name/keyrefuge     defaults                        recoveryonly
+
+# External storage
+/external_sd    vfat    /dev/block/mmcblk0p1             flags=display="MicroSD";storage;wipeingui;removable
+/usb-otg        auto    /dev/block/sda1                  flags=display="USB-OTG";storage;wipeingui;removable
